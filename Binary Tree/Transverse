@@ -1,0 +1,171 @@
+//This file is basic knowledge about transversing a binary tree with pre,in,post_order .
+//Procedure of this file follows the content of binary tree in Leetcode
+
+1.前序遍历二叉树
+1.1 递归方法
+访问根节点->遍历左子树->遍历右子树
+    void pre_order(TreeNode* p,vector<int>& res)
+    {
+        if(p==NULL)
+            return;
+        res.push_back(p->val);
+        pre_order(p->left,res);
+        pre_order(p->right,res);
+    }
+    vector<int> preorderTraversal(TreeNode* root) 
+    {
+        vector<int> res;
+        pre_order(root,res);
+        return res;
+    }
+    
+1.2 非递归遍历 
+非递归遍历的关键是保存节点，对于前序遍历，每次从堆栈中取出一个节点，然后堆栈保存右节点，然后保存左节点
+vector<int> preorderTraversal(TreeNode* root) 
+    {
+        vector<int> res; //保存结果
+        if(root==NULL) 
+            return res;
+        list<TreeNode*> tree; //保存二叉树的队列，也可以用deque实现
+        tree.push_back(root);
+        TreeNode* p=NULL;
+        while(!tree.empty())
+        {
+            p=tree.front();
+            tree.pop_front(); //获取队头元素
+            res.push_back(p->val);//访问
+            if(p->left!=NULL)
+                tree.push_back(p->left); //左子树入队
+            if(p->right!=NULL)
+                tree.push_back(p->right); //右子树入队
+        }
+        return res;
+    }
+    
+ 2.中序遍历二叉树
+ 2.1 递归遍历
+ 遍历左子树->访问节点，输出信息->遍历右子树
+    void in_order(TreeNode* p,vector<int>& res)
+    {
+        if(p==NULL)
+            return;
+        in_order(p->left,res);
+        res.push_back(p->val);
+        in_order(p->right,res);
+    }
+    vector<int> inorderTraversal(TreeNode* root) 
+    {
+        vector<int> res;
+        in_order(root,res);
+        return res;
+    }
+ 2.2 非递归中序遍历
+ 先把根节点入栈，当栈不为空时：（1）如果当前元素不为空,压入堆栈，往左子树移动（2）如果当前元素为空，获取栈顶元素访问，往右子树移动
+    vector<int> inorderTraversal(TreeNode* root) 
+    {
+        vector<int> res;
+        stack<TreeNode*> tree;
+        TreeNode* p=root;
+        while(p!=NULL || !tree.empty())
+        {
+            if(p!=NULL)
+            {
+                tree.push(p);
+                p=p->left;   
+            }  //往左子树移动
+            else
+            {
+                 //访问栈顶元素
+                p=tree.top();
+                tree.pop(); 
+                res.push_back(p->val);
+                p=p->right; //移动到右子树
+            }
+        }
+        return res;
+    }
+    
+ 3.后序遍历
+ 3.1 递归遍历
+ 遍历左子树->遍历右子树->访问该节点
+    void post_order(TreeNode* p,vector<int>& res)
+    {
+        if(p==NULL)
+            return;
+        post_order(p->left,res);
+        post_order(p->right,res);
+        res.push_back(p->val);
+    }
+    vector<int> postorderTraversal(TreeNode* root) 
+    {
+        vector<int> res;
+        post_order(root,res);
+        return res;
+    }
+ 3.2 非递归遍历
+ 关键点：除了保存节点的堆栈外，需要一个同步堆栈记录进栈次数。进栈一次的不访问，进栈两次才访问
+    vector<int> postorderTraversal(TreeNode* root) 
+    {
+        vector<int> res;
+        stack<TreeNode*> tree;
+        stack<int> num; //记录每个节点进栈次数
+        TreeNode *p=root;
+        while(p!=NULL ||!tree.empty())
+        {
+            if(p!=NULL)
+            {
+                tree.push(p);
+                num.push(1); //记录对应进栈次数
+                p=p->left;
+            }
+            else
+            {
+                p=tree.top();
+                if(num.top()==1) //才进栈一次，不能访问
+                {
+                    num.pop();
+                    num.push(2); //把进栈次数改为2
+                    p=p->right;
+                }
+                else
+                {
+                    res.push_back(p->val);
+                    tree.pop();
+                    num.pop();
+                    p=NULL;
+                }
+            }
+                
+        }
+        return res;
+    }
+    
+4.层次遍历
+关键点：访问根节点->左孩子入队->右孩子入队
+//Leetcode102层次访问，每一层保存为一个vector<int>
+    vector<vector<int>> levelOrder(TreeNode* root) 
+    {
+        vector<vector<int>> res;
+        if(root==NULL)
+            return res;
+        queue<TreeNode*> q;
+        q.push(root);
+        TreeNode* p=NULL;
+        while(!q.empty())
+        {
+            int len=q.size(); //获取当前队列的大小，即每一层元素个数
+            vector<int> cur; //保存每一层遍历结果
+            for(int i=0;i<len;i++)
+            {
+                p=q.front();
+                q.pop();  //获取队头元素
+                cur.push_back(p->val);
+                if(p->left!=NULL)
+                    q.push(p->left);
+                if(p->right!=NULL)
+                    q.push(p->right);
+            }
+            res.push_back(cur);
+        }
+        return res;
+    }
