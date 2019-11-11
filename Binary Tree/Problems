@@ -1,0 +1,119 @@
+//此文件包含二叉树的相关习题，二叉树的题目一般都要涉及到二叉树的遍历问题，所以基础是二叉树的遍历
+
+1.计算二叉树的深度
+
+计算深度实际上就是深度遍历二叉树，并返回最大值。
+采用从上到下递归：如果当前节点为空，返回0；如果不为空，返回max(左子树+1,右子树+1)
+cpp程序如下：
+ int maxDepth(TreeNode *root)
+ {
+     if(root==NULL)
+         return 0;
+     return max(maxDepth(root->left)+1,maxDepth(root->right)+1);
+ }
+
+2. 镜像二叉树问题
+
+判断一颗二叉树是否关于根节点对称（镜像）
+此题不能先一个前序遍历，另一个反着前序遍历（就是先访问右子树，再访问左子树，跟前序遍历完全相反），然后判断遍历结果是否相同，因为如果遇到以下情况此方法则行不通：
+    1
+   / \
+  2   2
+   \   \
+   3    3
+必须在每到一个节点之后先开始判断是否相等（NULL节点也要保存）,采用完全反序的遍历方式即可
+非递归算法，一个从左到右遍历，一个从右到左遍历
+    bool isSymmetric(TreeNode* root) 
+    {
+        if(root==NULL)
+            return true;
+       queue<TreeNode*> q1;
+       queue<TreeNode*> q2;
+        q1.push(root->left);
+        q2.push(root->right);
+        TreeNode* p1=NULL;
+        TreeNode* p2=NULL;
+        while(!q1.empty() && !q2.empty())
+        {
+            p1=q1.front();
+            q1.pop();
+            p2=q2.front();
+            q2.pop();
+            if((p1==NULL &&p2!=NULL)||(p1!=NULL && p2==NULL))
+                return false;
+            if(p1!=NULL)
+            {
+                if(p1->val!=p2->val)
+                    return false;
+                q1.push(p1->left);
+                q1.push(p1->right);
+                q2.push(p2->right);
+                q2.push(p2->left);
+            }
+            
+        }
+        return true;
+    }
+    
+递归层序遍历
+    bool isSymmetric(TreeNode* root) 
+    {
+        if(root==NULL)
+            return true;
+        return Symetric(root->left,root->right);
+    }
+    
+    bool Symetric(TreeNode* left,TreeNode* right)
+    {
+        if((left==NULL && right!=NULL)||(left!=NULL && right==NULL))
+            return false;
+        if(left==NULL && right==NULL)
+            return true;
+        if(left!=NULL)
+            if(left->val!=right->val)
+                return false;
+        
+        return (Symetric(left->left,right->right)&&Symetric(left->right,right->left));
+    }
+    
+3. 路径求和问题
+问题描述：Given a binary tree and a sum, determine if the tree has a root-to-leaf path such that adding up all the values along the path equals the given sum.
+Example:
+Given the below binary tree and sum = 22,
+      5
+     / \
+    4   8
+   /   / \
+  11  13  4
+ /  \      \
+7    2      1
+return true, as there exist a root-to-leaf path 5->4->11->2 which sum is 22.
+方法：就是一个二叉树的深度遍历，深度遍历完一条路径，判断和
+    bool hasPathSum(TreeNode* root, int sum) 
+    {
+        if(root==NULL)
+            return false;
+        bool res=false;
+        vector<int> cur;
+        DFS(root,cur,sum,res);  
+        return res;
+    }
+    
+    void DFS(TreeNode* p,vector<int>& cur,int sum,bool& res)
+    {
+        if(p==NULL)
+        {
+            return;
+        }
+        cur.push_back(p->val);
+        if(p->left==NULL && p->right==NULL) 
+            if(accumulate(cur.begin(),cur.end(),0)==sum)
+                res=true; //判断深度遍历完一颗子树
+        DFS(p->left,cur,sum,res);
+        DFS(p->right,cur,sum,res);
+        cur.pop_back();
+    }
+    
+也可以直接原函数递归：
+
+
