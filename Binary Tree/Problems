@@ -177,8 +177,42 @@ inorder=[9,3,15,20,7]
         return build(preorder,inorder,0,0,preorder.size());
     }
     
-
-
+2. 中序遍历和后续遍历恢复二叉树
+    3
+   / \
+  9  20
+    /  \
+   15   7
+inorder=[9,3,15,20,7]
+postorder=[9,15,7,20,3]
+(1)后序遍历最后一个节点是根节点，此处为3
+(2)在中序遍历中找到根节点坐标index,在根节点之前的左子树大小left_size=index-inbegin(inbegin为中序遍历开始的位置)；右子树大小right_size=length-left_size-1;
+由此得到左子树中序遍历和右子树中序遍历
+(3)在后续遍历中找到左子树后续遍历和右子树后续遍历,左子树后续遍历为从后序遍历最后节点坐标开始，减去right_size,再减去left_size
+(4)找到了左右子树的中序和后续，递归即可。具体代码见下：
+    TreeNode* buildTree(vector<int>& inorder, vector<int>& postorder) 
+    {
+       return build(inorder,postorder,postorder.size()-1,0,postorder.size());
+    }
+    
+    //1.后续遍历的最后一个数时根节点
+    //2.中序遍历中，根节点前面是左子树，后边是右子树
+    //3.找到左子树和右子树的中序和后续遍历，调用递归函数
+    //参数：树的中序和后续遍历，后序遍历最后一个数位置，中序遍历第一个数的位置，遍历长度
+    TreeNode* build(vector<int>& inorder,vector<int>& postorder,int postend,int inbegin,int length) 
+    {
+        if(length==0)
+            return NULL;
+        TreeNode* p=new TreeNode(postorder[postend]);
+        int index=find(inorder.begin(),inorder.end(),postorder[postend])-inorder.begin(); //找到根节点在中序遍历中的位置
+        int left_size=index-inbegin;
+        int right_size=length-left_size-1;
+        p->left=build(inorder,postorder,postend-right_size-1,inbegin,left_size);
+        p->right=build(inorder,postorder,postend-1,inbegin+left_size+1,right_size);
+        return p;
+    }
+    
+ 
 
 
 
