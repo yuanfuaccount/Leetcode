@@ -1,6 +1,6 @@
 递归的基本思想是可以拆分成更小的子问题，先看一个例子
 
-Part 1:
+Part 1:递归基本思想
 求一颗二叉树的最大深度。
 int maxDepthTree(TreeNode* p)
 {
@@ -13,4 +13,76 @@ int maxDepthTree(TreeNode* p)
 1.一个基本情况，此基本情况不再调用递归，直接返回值（对应此处p==NULL）
 2.将问题分成小的递归子问题，比如本题求二叉树的深度，那么就是左子树深度或右子树深度最大值+1。拆分成了求左子树深度和右子树深度。
 
-按照上面的逻辑，再来看一个经典例子，
+按照上面的逻辑，再来看一个经典例子，翻转一个链表每相邻两个节点
+1.首先翻转最开始的两个节点，第二个节点的next指向翻转后的剩余子节点。即每两个子节点的操作一样。
+2.基本情况是最后只剩一个节点或不剩节点。
+C++代码如下：
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+ 
+ ListNode* swapPairs(ListNode* head) 
+ {
+   if(head==NULL||head->next==NULL)
+     return head;
+   ListNode* temp=head->next->next;
+   head->next->next=head;
+   head=head->next; //交换两个子节点
+   head->next->next=swapPairs(temp);  //第二个节点的next指向其余节点的head
+   return head;
+ }
+ 
+ 可见递归是能将问题拆分成更小的子问题，即在完成最后一次操作时，其结果与前面的操作有关并且与前面的操作相同。
+ 
+ Part 2:Remorization
+ 递归在计算时，经常会出现重复。一个典型的例子就是fibonacci数列。设f(n)是fibonacci数列的第n个数，其递推公式是f(n)=f(n-1)+f(n-2)。
+ 现在我要计算f(5):
+ 递归：f(5)=f(4)+f(3) (1)
+         f(4)=f(3)+f(2)  (2)
+         f(3)=f(2)+f(1)  (3)
+            f(3)=f(2)+f(1) (4)
+ 从中看出，f(3)被计算了两次，这种重复计算随着n的增大会使得程序时间复杂度指数增长。此时有效的方案是将计算到的f(n)保存下来。比如求fibonacci数列
+ C++代码，用一个unordered_map记忆f(n)
+ unordered_map<int,int> map;
+ int f(n)
+ {
+    if(n<=2)
+       return n; //基本情况
+    if(map[n])
+       return map[n]; //有记忆的情况
+    int res=f(n-1)+f(n-2);
+    map[n]=res; //记忆
+    return res;
+ }
+ 
+这种记忆方法跟动态规划有点类似。动态规划是从基本情况开始，往最终情况“递推”；而递推的记忆是从最终情况开始，递推到基本情况，并实时记忆。
+以经典的爬楼梯问题为例，比较递归和动态规划。
+问题描述：
+You are climbing a stair case. It takes n steps to reach to the top.
+Each time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?
+Note: Given n will be a positive integer.
+递归和动态在此问题上的共同点都是需要找到递推公式，设dp[n]为爬上n级台阶的方法数，在到达n之前有两种情况：在n-1阶或n-2阶，所以dp[n]=dp[n-1]+dp[n-2]。
+C++代码如下：
+递归记忆：
+与fibonacci的代码一样
+动态规划
+int climbStairs(int n) 
+{
+   if(n<=2)
+      return n;
+   vector<int> dp(n,0); dp[n-1]代表到n阶楼梯的方法数
+   dp[0]=1; 
+   dp[1]=2; //基本情况
+   for(int i=3;i<=n;i++)
+      dp[i-1]=dp[i-2]+dp[i-3];
+   return dp[n-1];
+}
+
+Part 3:Complexity alynasis
+时间复杂度比较好分析，空间复杂度注意每一个递归会用到一个栈去保存本次调用的地址，然后去执行下一次调用，因此包含一个O(n)的空间复杂度(尾递归不含此部分空间复杂度)
+
