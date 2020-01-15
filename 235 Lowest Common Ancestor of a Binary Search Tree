@@ -1,0 +1,60 @@
+Given a binary search tree (BST), find the lowest common ancestor (LCA) of two given nodes in the BST.
+According to the definition of LCA on Wikipedia: “The lowest common ancestor is defined between two nodes p and q as the lowest node in T that has both p and q as descendants (where we allow a node to be a descendant of itself).”
+Given binary search tree:  root = [6,2,8,0,4,7,9,null,null,3,5]
+
+                 6
+               /   \
+              2     8
+             / \   / \
+            0   4 7   9
+               / \
+              3   5
+              
+Example 1:
+Input: root = [6,2,8,0,4,7,9,null,null,3,5], p = 2, q = 8
+Output: 6
+Explanation: The LCA of nodes 2 and 8 is 6.
+
+Example 2:
+Input: root = [6,2,8,0,4,7,9,null,null,3,5], p = 2, q = 4
+Output: 2
+Explanation: The LCA of nodes 2 and 4 is 2, since a node can be a descendant of itself according to the LCA definition.
+ 
+Note:
+All of the nodes' values will be unique.
+p and q are different and both values will exist in the BST.
+
+思路：
+如果当前节点的val比p和q都小，说明p和q都在当前节点的左子树上，当前节点不可能是LCA
+如果当前节点的val比一个大，另一个小，说明p和q分别在左右子树上，当前节点为LCA
+如果当前节点的val等于一个目标节点的val，说明该节点为LCA
+代码如下：
+TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) 
+{
+    if((root->val-p->val)*(root->val-q->val)<0) //一个大，一个小
+        return root;
+    if(root->val==p->val)
+        return p;
+    if(root->val==q->val)
+        return q;
+    else if(root->val>p->val && root->val>q->val)  //在左子树上
+        return lowestCommonAncestor(root->left,p,q);
+    else
+        return lowestCommonAncestor(root->right,p,q);
+}
+
+非递归算法更好理解
+TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) 
+{
+   if(root==NULL)
+       return NULL;
+   while(1)
+   {
+       if(root->val<p->val && root->val<q->val) root=root->right;
+       else if(root->val>p->val && root->val>q->val) root=root->left;
+       else break;
+   }
+   if(root->val==p->val) return p;
+   else if(root->val==q->val) return q;
+   else return root;
+}
