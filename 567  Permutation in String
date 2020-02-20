@@ -1,1 +1,38 @@
+题目描述：
+Given two strings s1 and s2, write a function to return true if s2 contains the permutation of s1. In other words, one of the first 
+string's permutations is the substring of the second string.
+
+Example 1:
+Input: s1 = "ab" s2 = "eidbaooo"
+Output: True
+Explanation: s2 contains one permutation of s1 ("ba").
+
+Example 2:
+Input:s1= "ab" s2 = "eidboaoo"
+Output: False
+
+核心思想:在s2中维护一个滑动窗口，大小为s1串的长度。如果该窗口的字符串是s1的一个排列，即返回true
+关键问题:怎么判断一个字符串是另一个字符串的排列？
+解决方法:初始想法是利用C++的sort函数，先给s1排序,然后判断s2窗口字符串s的首字母是否在s1中，在的话对s排序，如果s1=s，则窗口子串是s1的一个排列；
+更好的方案是统计s1中各个字符数量，如果s2的窗口子串s各字符数量与s1相同，则s是s1的一个排列。该方法简化了排序操作。
+
+C++代码如下：
+bool checkInclusion(string s1, string s2) 
+    {
+        int n1=size(s1);
+        int n2=size(s2);
+        if(n1>n2) return false;
+        sort(s1.begin(),s1.end());
+        for(int i=0;i+n1<=n2;i++)
+        {
+            if(s1.find(s2[i])!=s1.npos)
+            {
+                string s=s2.substr(i,n1);
+                sort(s.begin(),s.end());
+                if(s==s1) return true;
+            }
+        }
+        return false;
+    }
+
 
