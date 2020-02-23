@@ -1,0 +1,150 @@
+滑动窗口的三个主要要素：
+1. 要求的结果，无论是长度，还是子串，都是一个长的串类型的子串(即要求的结果各个元素相邻)
+2. 通常在滑动窗口内，都会用到哈希函数。以字符串为例，在滑动窗口内，都会以字符作为键值，存储关键信息，通常为以下两种：
+(a) 存储该字符所在位置序号；
+(b) 存储窗口内该字符个数。
+具体存储哪种值，跟要求的结果有关
+3. 存储窗口内同一字符的个数时，采用本题所使用的技巧。
+
+滑动窗口相关的题一般1和2都会用到
+
+题目描述：
+Given a string s that consists of only uppercase English letters, you can perform at most k operations on that string.
+In one operation, you can choose any character of the string and change it to any other uppercase English character.
+Find the length of the longest sub-string containing all repeating letters you can get after performing the above operations.
+
+Note:
+Both the string's length and k will not exceed 104.
+
+Example 1:
+Input:
+s = "ABAB", k = 2
+Output:
+4
+Explanation:
+Replace the two 'A's with two 'B's or vice versa.
+ 
+Example 2:
+Input:
+s = "AABABBA", k = 1
+Output:
+4
+Explanation:
+Replace the one 'A' in the middle with 'B' and form "AABBBBA".
+The substring "BBBB" has the longest repeating letters, which is 4.
+
+
+解法1：
+本人最开始的思路是从当前字母(假设序号为i)往遍历(假设序号为j)，遇到与当前字母不相同的字母，k--。当k减到-1时，不能再继续向前滑动了。此时最长字符串长度
+就是j-i。
+注：这里为什么不需要往前遍历? 因为如果往前遍历能形成最长子串时，那么在i遍历到之前的那个字符时，往后遍历所产生的效果与到了后边往前遍历产生的效果相同，
+如：s="AABAA"。 k=1；  s[1]向后遍历与s[3]向前遍历的效果相同，所以不需要往前遍历。
+但要注意例外，如：s="ABBB", k=1;  这种情况是因为走到字符串结尾时，k还没减到-1，这时必须再往前遍历。
+C++ code如下：
+int characterReplacement(string s, int k) 
+    {
+        int n=size(s);
+        int len=0;
+        for(int i=0;i<n;i++)
+        {
+            int num=k;
+            int j=i+1;
+            for(;j<n;j++)
+            {
+                if(s[j]!=s[i]) num--;
+                if(num==-1) break;
+            }
+            if(num==-1)
+            {
+                if(j-i>len) len=j-i;
+            }
+            else
+            {
+                //往右走到头了
+                if(i>0)
+                {
+                    int k=i-1;
+                    for(;k>=0;k--)
+                    {
+                        if(s[k]!=s[i]) num--;
+                        if(num==-1) break;
+                    }
+                    if(j-k-1>len) len=j-k-1;
+                }
+                
+            }
+        }
+        return len;
+    }
+    
+    此种解法复杂度最大(n^2)，正确但是超时。并且不属于滑动窗口的解法；
+
+解法2:
+考虑维护一个窗口，该窗口即能获得的最大子串长度。在该滑动窗口中，能获得最大长度的一定是出现次数最多的那个字符，因为这样，需要的改变次数才能小，窗口
+才能增长。设窗口中出现次数最多的字符出现次数为maxchar, 窗口开始的序号start,结束的序号end,只有当maxchar+k<=end-start时，窗口才能继续扩大,否则start++
+此处涉及到统计窗口中字符出现次数，假设维持一个unordered_map m，当end向后移动之后m[s[end]]++。当start向后移动之前m[s[start]]--。就能统计窗口中某个字
+符出现的次数。
+C++代码如下
+int characterReplacement(string s, int k) 
+    {
+        int n=size(s);
+        if(n<=k) return n;
+        int start=0,end=0;
+        int maxchar=0;
+        unordered_map<int,int> m;
+        m[s[end]-'A']++;
+        int res=0;
+        while(end<n)
+        {
+            maxchar=0;
+            for(int i=0;i<26;i++ )
+            {
+                if(m[i]>maxchar) maxchar=m[i]; //寻找出现次数最多的字符
+            }
+            if(maxchar+k>end-start)
+            {
+                end++;
+                if(end<n) m[s[end]-'A']++;
+            }
+            else
+            {
+                m[s[start]-'A']--;
+                start++; 
+            }
+            if(res<maxchar+k) res=maxchar+k<=n? maxchar+k:n;
+        }
+        return res;
+    }
+    
+    
+解法3：
+从解法2可以看到，每次窗口移动时，都要寻找窗口中出现次数最多的那个字符的出现次数，因此每次都有一个循环。但是当窗口中的maxchar小于等于整个序列的最大
+maxchar时，该窗口的大小肯定小于等于取最大maxchar时窗口的大小，因为窗口大小其实就是maxchar+k。因此，不需要每次都去找窗口maxchar，只需要找到序列最大的
+maxchar，改进算法就能省略掉每次寻找maxchar造成的循环。
+C++代码如下：
+int characterReplacement(string s, int k) 
+    {
+        int n=size(s);
+        if(n<=k) return n;
+        
+        int start=0,end=0;
+        unordered_map<char,int> m;
+        int curlen=0;
+        int maxchar=0;
+        int res=0;
+        for(;end<n;end++)
+        {
+            curlen=++m[s[end]];
+            maxchar=max(maxchar,curlen);
+            if(end-start+1>maxchar+k)
+            {
+                m[s[start]]--;
+                start++;
+            }
+            if(res<end-start+1) res=end-start+1;
+        }
+        return res;
+    }
+
+
+
